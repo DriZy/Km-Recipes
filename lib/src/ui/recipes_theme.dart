@@ -31,7 +31,8 @@ ThemeData buildTheme() {
     textTheme: _buildTextTheme(base.textTheme),
     primaryColor: const Color(0xFFFFF8E1),
     indicatorColor: const Color(0xFF807A6B),
-    scaffoldBackgroundColor: const Color(0xFFF5F5F5),
+    bottomAppBarColor: const Color(0xFF807A6B),
+    scaffoldBackgroundColor: const Color(0xFFFAFAFA),
     accentColor: const Color(0xFFFFF8E1),
     iconTheme: IconThemeData(
       color: const Color(0xFFCCC5AF),
@@ -41,6 +42,6 @@ ThemeData buildTheme() {
     tabBarTheme: base.tabBarTheme.copyWith(
       labelColor: const Color(0xFF807A6B),
       unselectedLabelColor: const Color(0xFFCCC5AF),
-    )
+    ),
   );
 }

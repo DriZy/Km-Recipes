@@ -16,46 +16,79 @@ class HomeScreen extends StatefulWidget {
 
 class HomeScreenState extends State<HomeScreen> {
   StateModel appState;
-  DefaultTabController _buildTabView({Widget body}) {
-    const double _iconSize = 20.0;
+  int _selectedIndex = 0;
 
-    return DefaultTabController(
-      length: 4,
-      child: Scaffold(
-        appBar: PreferredSize(
-          // We set Size equal to passed height (50.0) and infinite width:
-          preferredSize: Size.fromHeight(50.0),
-          child: AppBar(
-            elevation: 2.0,
-            bottom: TabBar(
-              labelColor: Theme.of(context).indicatorColor,
-              tabs: [
-                Tab(icon: Icon(Icons.restaurant, size: _iconSize)),
-                Tab(icon: Icon(Icons.local_drink, size: _iconSize)),
-                Tab(icon: Icon(Icons.favorite, size: _iconSize)),
-                Tab(icon: Icon(Icons.settings, size: _iconSize)),
-              ],
-            ),
-          ),
-        ),
-        body: Padding(
-          padding: EdgeInsets.all(5.0),
-          child: body,
-        ),
-      ),
-    );
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   Widget _buildContent() {
     if (appState.isLoading) {
-      return _buildTabView(
+      return Scaffold(
         body: _buildLoadingIndicator(),
       );
     } else if (!appState.isLoading && appState.user == null) {
       return new LoginScreen();
     } else {
-      return _buildTabView(
-        body: _buildTabsContent(),
+      List<Widget> _widgetOptions = <Widget>[
+        _buildRecipes(recipeType: RecipeType.food),
+        _buildRecipes(recipeType: RecipeType.drink),
+        _buildRecipes(ids: appState.favorites),
+        _buildSettings(),
+      ];
+
+      return Scaffold(
+        appBar: AppBar(
+          title: Text("Km Recipes",
+              style: TextStyle(fontSize: 30, color: Colors.orange)),
+        ),
+        body: _widgetOptions.elementAt(_selectedIndex),
+        // floatingActionButton: AddRecipe(
+        //   onPressed: () => Navigator.of(context).pushNamed('/add_recipe'),
+        // ),
+        floatingActionButton: Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context)
+                .colorScheme
+                .copyWith(secondary: Colors.orange),
+          ),
+          child: FloatingActionButton(
+            onPressed: () => Navigator.of(context).pushNamed('/add_recipe'),
+            child: Icon(Icons.add),
+          ),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.restaurant,
+                  color: Colors.grey,
+                ),
+                title: Text("Food")),
+            BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.local_drink,
+                  color: Colors.grey,
+                ),
+                title: Text('Drink')),
+            BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.favorite,
+                  color: Colors.grey,
+                ),
+                title: Text('Favorites')),
+            BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.settings,
+                  color: Colors.grey,
+                ),
+                title: Text('Settings'))
+          ],
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+        ),
       );
     }
   }
@@ -63,6 +96,70 @@ class HomeScreenState extends State<HomeScreen> {
   Center _buildLoadingIndicator() {
     return Center(
       child: new CircularProgressIndicator(),
+    );
+  }
+
+  Padding _buildRecipes({RecipeType recipeType, List<String> ids}) {
+    CollectionReference collectionReference =
+        Firestore.instance.collection('recipes');
+    Stream<QuerySnapshot> stream;
+    // The argument recipeType is set
+    if (recipeType != null) {
+      stream = collectionReference
+          .where("type", isEqualTo: recipeType.index)
+          .snapshots();
+    } else {
+      // Use snapshots of all recipes if recipeType has not been passed
+      stream = collectionReference.snapshots();
+    }
+
+    // Define query depeneding on passed args
+    return Padding(
+      // Padding before and after the list view:
+      padding: const EdgeInsets.symmetric(vertical: 5.0),
+      child: Column(
+        children: <Widget>[
+          Expanded(
+            child: new StreamBuilder(
+              stream: stream,
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (!snapshot.hasData) return _buildLoadingIndicator();
+                return new ListView(
+                  children: snapshot.data.documents
+                      // Check if the argument ids contains document ID if ids has been passed:
+                      .where((d) => ids == null || ids.contains(d.documentID))
+                      .map((document) {
+                    return new RecipeCard(
+                      recipe:
+                          Recipe.fromMap(document.data, document.documentID),
+                      inFavorites:
+                          appState.favorites.contains(document.documentID),
+                      onFavoriteButtonPressed: _handleFavoritesListChanged,
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Column _buildSettings() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        SettingsButton(
+          Icons.exit_to_app,
+          "Log out",
+          appState.user.displayName,
+          () async {
+            await StateWidget.of(context).signOutOfGoogle();
+          },
+        ),
+      ],
     );
   }
 

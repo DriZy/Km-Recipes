@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:km_recipes/src/ui/screens/add_recipe.dart';
 
 import 'package:km_recipes/src/ui/screens/recipes_home.dart';
 import 'package:km_recipes/src/ui/screens/recipes_login.dart';
@@ -14,6 +15,7 @@ class RecipesApp extends StatelessWidget {
       routes: {
         '/': (context) => HomeScreen(),
         '/login': (context) => LoginScreen(),
+        '/add_recipe': (context) => AddRecipe(),
       },
     );
   }
