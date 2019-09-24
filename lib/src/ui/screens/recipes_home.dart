@@ -45,9 +45,6 @@ class HomeScreenState extends State<HomeScreen> {
               style: TextStyle(fontSize: 30, color: Colors.orange)),
         ),
         body: _widgetOptions.elementAt(_selectedIndex),
-        // floatingActionButton: AddRecipe(
-        //   onPressed: () => Navigator.of(context).pushNamed('/add_recipe'),
-        // ),
         floatingActionButton: Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context)

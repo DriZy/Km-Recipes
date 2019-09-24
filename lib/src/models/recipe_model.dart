@@ -6,15 +6,15 @@ enum RecipeType {
 }
 
 class Recipe {
-  final String id;
-  final RecipeType type;
-  final String name;
-  final Duration duration;
-  final List<String> ingredients;
-  final List<String> preparation;
-  final String imageURL;
+  String id;
+  RecipeType type;
+  String name;
+  Duration duration;
+  List<String> ingredients;
+  List<String> preparation;
+  String imageURL;
 
-  const Recipe({
+  Recipe({
     this.id,
     this.type,
     this.name,

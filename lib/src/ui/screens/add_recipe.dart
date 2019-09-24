@@ -11,7 +11,8 @@ class AddRecipe extends StatefulWidget {
 }
 
 class _AddRecipeState extends State<AddRecipe> {
-  final _formKey = GlobalKey();
+  final _formKey = GlobalKey<FormState>();
+
   File galleryFile;
 
   List<String> ingredients = [];
@@ -35,7 +36,7 @@ class _AddRecipeState extends State<AddRecipe> {
 
     Widget displaySelectedFile(File file) {
       return new SizedBox(
-        height: 200.0,
+        height: 150.0,
         width: 300.0,
 //child: new Card(child: new Text(''+galleryFile.toString())),
 //child: new Image.file(galleryFile),
@@ -65,8 +66,9 @@ class _AddRecipeState extends State<AddRecipe> {
                       return 'Please enter recipe type';
                     }
                   },
-                  // onSaved: (val) =>
-                  //     setState(() => _user.firstName = val),
+                  onSaved: (val) {
+                    print(val);
+                  },
                 ),
                 TextFormField(
                   decoration: InputDecoration(
@@ -75,6 +77,9 @@ class _AddRecipeState extends State<AddRecipe> {
                     if (value.isEmpty) {
                       return 'Please enter recipe name.';
                     }
+                  },
+                  onSaved: (val) {
+                    print(val);
                   },
                 ),
                 TextFormField(
@@ -85,6 +90,9 @@ class _AddRecipeState extends State<AddRecipe> {
                     if (value.isEmpty) {
                       return 'Please enter recipe Duration.';
                     }
+                  },
+                  onSaved: (val) {
+                    print(val);
                   },
                 ),
                 Padding(
@@ -99,10 +107,18 @@ class _AddRecipeState extends State<AddRecipe> {
                       key: Key(item),
                       onDismissed: (DismissDirection direction) {
                         setState(() {
-                           ingredients.remove(item);
+                          ingredients.remove(item);
                         });
                       },
                       child: TextFormField(
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return 'Please enter igredient';
+                          }
+                        },
+                        onSaved: (val) {
+                          print(val);
+                        },
                         decoration: InputDecoration(
                           icon: Icon(Icons.edit),
                           labelText: 'Enter ingredient',
@@ -146,7 +162,7 @@ class _AddRecipeState extends State<AddRecipe> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Text('Preparation',
+                  child: Text('Preparation Steps',
                       style: TextStyle(fontSize: 18),
                       textAlign: TextAlign.center),
                 ),
@@ -156,10 +172,18 @@ class _AddRecipeState extends State<AddRecipe> {
                         key: Key(item),
                         onDismissed: (DismissDirection direction) {
                           setState(() {
-                             preparation.remove(item);
+                            preparation.remove(item);
                           });
                         },
                         child: TextFormField(
+                          validator: (value) {
+                            if (value.isEmpty) {
+                              return 'Please enter preparayory step';
+                            }
+                          },
+                          onSaved: (val) {
+                            print(val);
+                          },
                           decoration: InputDecoration(
                               icon: Icon(Icons.edit),
                               labelText: 'Enter preparatory step',
@@ -204,20 +228,20 @@ class _AddRecipeState extends State<AddRecipe> {
                   onPressed: imageSelectorGallery,
                 ),
                 // onSaved: (val) =>
-                //     setState(() => _user.lastName = val)),
-                // Container(
-                //     padding: const EdgeInsets.symmetric(
-                //         vertical: 16.0, horizontal: 16.0),
-                //     child: RaisedButton(
-                //         onPressed: () {
-                //           final form = _formKey.currentState;
-                //           if (form.validate()) {
-                //             form.save();
-                //             _user.save();
-                //             _showDialog(context);
-                //           }
-                //         },
-                //         child: Text('Save'))),
+                //     setState(() => _user.lastName = val)
+                //),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: RaisedButton(
+                    onPressed: () {
+                      if (_formKey.currentState.validate()) {
+                        _formKey.currentState.save();
+                        _showDialog(context);
+                      }
+                    },
+                    child: Text('Add Recipe'),
+                  ),
+                ),
               ],
             ),
           ),
@@ -226,8 +250,8 @@ class _AddRecipeState extends State<AddRecipe> {
     );
   }
 
-  // _showDialog(BuildContext context) {
-  //   Scaffold.of(context)
-  //       .showSnackBar(SnackBar(content: Text('Submitting form')));
-  // }
+  _showDialog(BuildContext context) {
+    Scaffold.of(context)
+        .showSnackBar(SnackBar(content: Text('Submitting form')));
+  }
 }
