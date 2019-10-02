@@ -14,7 +14,7 @@ class AddRecipe extends StatefulWidget {
 class _AddRecipeState extends State<AddRecipe> {
   final _formKey = GlobalKey<FormState>();
 
-  String type, name, duration, url;
+  String type, name, url, duration;
   List<String> ingredients = [];
   List<String> preparation = [];
 
@@ -26,6 +26,16 @@ class _AddRecipeState extends State<AddRecipe> {
     setState(() {
       sampleImage = tempImage;
     });
+  }
+
+  Future<String> uploadImage(var sampleImage) async {
+    StorageReference ref = FirebaseStorage.instance.ref().child(name);
+    StorageUploadTask uploadTask = ref.putFile(sampleImage);
+
+    var dowurl = await (await uploadTask.onComplete).ref.getDownloadURL();
+    url = dowurl.toString();
+
+    return url;
   }
 
   final db = Firestore.instance;
@@ -64,7 +74,7 @@ class _AddRecipeState extends State<AddRecipe> {
                     }
                   },
                   onSaved: (value) {
-                    type = value;
+                    type = value.toLowerCase();
                   },
                 ),
                 TextFormField(
@@ -81,16 +91,18 @@ class _AddRecipeState extends State<AddRecipe> {
                 ),
                 TextFormField(
                   keyboardType: TextInputType.number,
+                  inputFormatters: <TextInputFormatter>[
+                    WhitelistingTextInputFormatter.digitsOnly
+                  ],
                   decoration: InputDecoration(
                       icon: const Icon(Icons.timer), labelText: 'Duration'),
                   validator: (value) {
                     if (value.isEmpty) {
                       return 'Please enter recipe Duration.';
                     }
-                    duration = value;
                   },
-                  onSaved: (duration) {
-                    duration = duration;
+                  onSaved: (val) {
+                    duration = val;
                   },
                 ),
                 Padding(
@@ -222,35 +234,22 @@ class _AddRecipeState extends State<AddRecipe> {
                       : enableUpload(),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: <Widget>[
-                        RaisedButton(
-                          child: new Text('Select Recipe Image'),
-                          onPressed: getImage,
-                        ),
-                        RaisedButton(
-                            child: new Text('Save Image'),
-                            onPressed: () {
-                              Image.file(sampleImage);
-                              StorageReference firebaseStorageRef =
-                                  FirebaseStorage.instance
-                                      .ref()
-                                      .child(name);
-                              final StorageUploadTask task =
-                                  firebaseStorageRef.putFile(sampleImage);
-                               final url = firebaseStorageRef.getDownloadURL();
-                              print(url);
-                            }),
-                      ]),
-                ),
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          RaisedButton(
+                            child: new Text('Select Recipe Image'),
+                            onPressed: getImage,
+                          ),
+                        ])),
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: RaisedButton(
                     onPressed: () {
                       if (_formKey.currentState.validate()) {
                         _formKey.currentState.save();
+                        uploadImage(sampleImage);
                         _formData();
                         _showDialog(context);
                       }
@@ -274,11 +273,12 @@ class _AddRecipeState extends State<AddRecipe> {
   // }
 
   _formData() {
+    final time = num.parse(duration);
     DocumentReference ds = Firestore.instance.collection('recipes').document();
     Map<String, dynamic> recipes = {
       "type": type,
       "name": name,
-      "duration": duration,
+      "duration": time,
       "ingredients": ingredients,
       "preparation": preparation,
       "imageURL": url,

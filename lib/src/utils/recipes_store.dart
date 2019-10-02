@@ -32,10 +32,3 @@ Future<bool> updateFavorites(String uid, String recipeId) {
     return false;
   });
 }
-
-
-// Future<DocumentReference> add(Map<String, dynamic> data) async {
-//   final DocumentReference newDocument = document();
-//   await newDocument.setData(data);
-//   return newDocument;
-// }
